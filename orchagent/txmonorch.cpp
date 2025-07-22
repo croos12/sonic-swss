@@ -240,10 +240,10 @@ int TxMonOrch::pollOnePortErrorStatistics(const string &port, TxErrorStatistics 
     txErrStatistics = txErrStatistics * 991 % 997;
     seed = txErrStatistics;
     txErrStatistics += txErrStatLasttime;
-    SWSS_LOG_INFO("TX_ERR_POLL: got port %s tx_err stati %" PRIu64 ", lasttime %" PRIu64 " threshold %" PRIu64 "\n", 
+    SWSS_LOG_INFO("TX_ERR_POLL: got port %s tx_err status%" PRIu64 ", last time %" PRIu64 " threshold %" PRIu64 "\n", 
                     port.c_str(), txErrStatistics, txErrStatLasttime, txErrStatThreshold);
     uint64_t tx_err = 0;
-    SWSS_LOG_INFO("TX_ERR_POLL: got port %s %lx tx_err stati %" PRIu64 ", lasttime %" PRIu64 " threshold %" PRIu64 "\n", 
+    SWSS_LOG_INFO("TX_ERR_POLL: got port %s %lx tx_err status%" PRIu64 ", last time %" PRIu64 " threshold %" PRIu64 "\n", 
                     port.c_str(), tesPortId(stat),
                     txErrStatistics, txErrStatLasttime, txErrStatThreshold);
     vector<FieldValueTuple> fieldValues;
@@ -271,7 +271,7 @@ int TxMonOrch::pollOnePortErrorStatistics(const string &port, TxErrorStatistics 
         SWSS_LOG_INFO("TX_ERR_POLL: failed to get port %s %lx \n", port.c_str(), tesPortId(stat));
     }
     txErrStatistics = tx_err;
-    SWSS_LOG_INFO("TX_ERR_POLL: got port %s tx_err stati %ld, lasttime %ld threshold %ld\n", 
+    SWSS_LOG_INFO("TX_ERR_POLL: got port %s tx_err status%ld, last time %ld threshold %ld\n", 
                     port.c_str(), txErrStatistics, txErrStatLasttime, txErrStatThreshold);
 
     if (txErrStatistics - txErrStatLasttime > txErrStatThreshold)
