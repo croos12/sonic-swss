@@ -31,12 +31,15 @@
 #define METER_STAT_COUNTER_FLEX_COUNTER_GROUP "METER_STAT_COUNTER"
 #define METER_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS 10000
 
+<<<<<<< HEAD
 #define CP_DATA_CHANNEL_STAT_COUNTER_FLEX_COUNTER_GROUP "CP_DATA_CHANNEL_STAT_COUNTER"
 #define CP_DATA_CHANNEL_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS 10000
 
 #define BULK_SYNC_STAT_COUNTER_FLEX_COUNTER_GROUP "BULK_SYNC_STAT_COUNTER"
 #define BULK_SYNC_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS 10000
 
+=======
+>>>>>>> 3a9f9e43 ([Dash] Deprecate traditional Flex Counter support  (#3954))
 #define DASH_RESULT_SUCCESS 0
 #define DASH_RESULT_FAILURE 1
 
@@ -68,11 +71,8 @@ public:
     const EniEntry *getEni(const std::string &eni) const;
     const EniTable *getEniTable() const { return &eni_entries_; };
     bool getRouteTypeActions(dash::route_type::RoutingType routing_type, dash::route_type::RouteType& route_type);
-    void handleFCStatusUpdate(bool is_enabled);
     dash::types::IpAddress getApplianceVip();
-    bool hasApplianceEntry();
-    void clearMeterFCStats();
-    void refreshMeterFCStats(bool);
+    bool hasApplianceEntry();    
 
 private:
     ApplianceTable appliance_entries_;
@@ -113,22 +113,80 @@ private:
     bool removeEniRoute(const std::string& eni);
 
 private:
-    std::map<sai_object_id_t, std::string> m_eni_stat_work_queue;
-    FlexCounterManager m_eni_stat_manager;
-    bool m_eni_fc_status = false;
-    std::unordered_set<std::string> m_counter_stats;
+
+    template<CounterType CT>
+    struct DashCounter
+    {
+        FlexCounterManager stat_manager;
+        bool fc_status = false;
+        std::unordered_set<std::string> counter_stats;
+
+        DashCounter() {}
+        DashCounter(const std::string& group_name, StatsMode stats_mode, uint polling_interval, bool enabled) 
+            : stat_manager(group_name, stats_mode, polling_interval, enabled) { fetchStats(); }
+        void fetchStats();
+        
+        void addToFC(sai_object_id_t oid, const std::string& name)
+        {
+            if (!fc_status)
+            {
+                return;
+            }
+
+            if (oid == SAI_NULL_OBJECT_ID)
+            {
+                SWSS_LOG_WARN("Cannot add counter on NULL OID for %s", name.c_str());
+                return;
+            }
+            stat_manager.setCounterIdList(oid, CT, counter_stats);
+        }
+
+        void removeFromFC(sai_object_id_t oid, const std::string& name)
+        {
+            if (oid == SAI_NULL_OBJECT_ID)
+            {
+                SWSS_LOG_WARN("Cannot remove counter on NULL OID for %s", name.c_str());
+                return;
+            }
+            stat_manager.clearCounterIdList(oid);
+        }
+
+        void refreshStats(bool install, const EniTable& eni_entries)
+        {
+            for (auto it = eni_entries.begin(); it != eni_entries.end(); it++)
+            {
+                if (install)
+                {
+                    addToFC(it->second.eni_id, it->first);
+                }
+                else
+                {
+                    removeFromFC(it->second.eni_id, it->first);
+                }
+            }
+        }
+
+        void handleStatusUpdate(bool enabled, const EniTable& eni_entries)
+        {
+            bool prev_enabled = fc_status;
+            fc_status = enabled;
+            if (fc_status != prev_enabled)
+            {
+                refreshStats(fc_status, eni_entries);
+            }
+        }
+    };
+
     std::unique_ptr<swss::Table> m_eni_name_table;
-    std::unique_ptr<swss::Table> m_vid_to_rid_table;
     std::shared_ptr<swss::DBConnector> m_counter_db;
     std::shared_ptr<swss::DBConnector> m_asic_db;
-    swss::SelectableTimer* m_fc_update_timer = nullptr;
     DashHaOrch* m_dash_ha_orch = nullptr;
 
-    void doTask(swss::SelectableTimer&);
     void addEniMapEntry(sai_object_id_t oid, const std::string& name);
     void removeEniMapEntry(sai_object_id_t oid, const std::string& name);
     DashCounter<CounterType::ENI> EniCounter;
     DashCounter<CounterType::DASH_METER> MeterCounter;
+<<<<<<< HEAD
     DashCounter<CounterType::CP_DATA_CHANNEL> CPDataChannelCounter;
     DashCounter<CounterType::BULK_SYNC> BulkSyncCounter;
 public:
@@ -136,4 +194,10 @@ public:
     void handleMeterFCStatusUpdate(bool is_enabled) { MeterCounter.handleStatusUpdate(is_enabled, eni_entries_); }
     void handleCPDataChannelFCStatusUpdate(bool is_enabled) { CPDataChannelCounter.handleStatusUpdate(is_enabled, eni_entries_); }
     void handleBulkSyncFCStatusUpdate(bool is_enabled) { BulkSyncCounter.handleStatusUpdate(is_enabled, eni_entries_); }
+=======
+
+public:
+    void handleFCStatusUpdate(bool is_enabled) { EniCounter.handleStatusUpdate(is_enabled, eni_entries_); }
+    void handleMeterFCStatusUpdate(bool is_enabled) { MeterCounter.handleStatusUpdate(is_enabled, eni_entries_); }
+>>>>>>> 3a9f9e43 ([Dash] Deprecate traditional Flex Counter support  (#3954))
 };
