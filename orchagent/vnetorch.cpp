@@ -2098,6 +2098,26 @@ void VNetRouteOrch::updateAllMonitoringSession(const string& vnet)
     }
 }
 
+bool VNetRouteOrch::isVnetRouteActive(const IpPrefix& ipPrefix)
+{
+    SWSS_LOG_ENTER();
+
+    for (auto& vnet_routes : syncd_tunnel_routes_)
+    {
+        auto it = vnet_routes.second.find(ipPrefix);
+        if (it != vnet_routes.second.end())
+        {
+            if (it->second.nhg_key.getSize() > 0)
+            {
+                SWSS_LOG_INFO("Prefix %s has active VNET route in %s",
+                              ipPrefix.to_string().c_str(), vnet_routes.first.c_str());
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void VNetRouteOrch::createMonitoringSession(const string& vnet, const NextHopKey& endpoint, const IpAddress& monitor_addr, IpPrefix& ipPrefix)
 {
     SWSS_LOG_ENTER();

@@ -506,6 +506,7 @@ public:
     void updateMonitorState(string& op, const IpPrefix& prefix , const IpAddress& endpoint, string state);
     void updateCustomBfdState(const IpAddress& monitoring_ip, const string& state);
     void updateAllMonitoringSession(const string& vnet);
+    bool isVnetRouteActive(const IpPrefix& ipPrefix);
 
 private:
     virtual bool addOperation(const Request& request);
