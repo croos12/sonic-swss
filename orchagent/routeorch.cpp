@@ -2497,6 +2497,12 @@ bool RouteOrch::addRoutePost(const RouteBulkContext& ctx, const NextHopGroupKey 
                 /* Clean up the newly created next hop group entry */
                 removeNextHopGroup(nextHops);
             }
+            if (status == SAI_STATUS_ITEM_ALREADY_EXISTS)
+            {
+                SWSS_LOG_NOTICE("Route %s already exists in SAI, possibly created by another component. Will retry.",
+                        ipPrefix.to_string().c_str());
+                return false;
+            }
             task_process_status handle_status = handleSaiCreateStatus(SAI_API_ROUTE, status);
             if (handle_status != task_success)
             {
