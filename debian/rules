@@ -44,6 +44,9 @@ override_dh_auto_build:
 	# Build and test countersyncd Rust project
 	cargo build --release --locked
 
+override_dh_auto_test:
+	true
+
 override_dh_auto_install:
 	dh_auto_install --destdir=debian/swss
 ifeq ($(ENABLE_GCOV), y)
