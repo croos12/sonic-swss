@@ -59,7 +59,10 @@ static const std::unordered_map<string, sai_direction_lookup_entry_action_t> dir
 
 DashOrch::DashOrch(DBConnector *db, vector<string> &tableName, DBConnector *app_state_db, ZmqServer *zmqServer) :
     ZmqOrch(db, tableName, zmqServer),
-    m_eni_stat_manager(ENI_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, ENI_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false)
+    EniCounter(ENI_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, ENI_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
+    MeterCounter(METER_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, METER_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
+    CPDataChannelCounter(CP_DATA_CHANNEL_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, CP_DATA_CHANNEL_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
+    BulkSyncCounter(BULK_SYNC_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, BULK_SYNC_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false)
 {
     SWSS_LOG_ENTER();
 

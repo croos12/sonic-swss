@@ -1042,6 +1042,48 @@ namespace flexcounter_test
         ASSERT_FALSE(checkFlexCounter(ENI_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, ENI_COUNTER_ID_LIST));
     }
 
+    TEST_F(StandaloneFCTest, TestMeterStatusUpdate)
+    {
+        /* Add a mock ENI */
+        EniEntry tmp_entry;
+        tmp_entry.eni_id = 0x7008000000021;
+        m_DashOrch->eni_entries_["497f23d7-f0ac-4c99-a98f-59b470e8c7c"] = tmp_entry;
+
+        /* Should create Meter Counter stats for existing ENI's */
+        m_DashOrch->handleMeterFCStatusUpdate(true);
+        ASSERT_TRUE(checkFlexCounter(METER_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, DASH_METER_COUNTER_ID_LIST));
+
+        /* This should delete the STATS */
+        m_DashOrch->handleMeterFCStatusUpdate(false);
+        ASSERT_FALSE(checkFlexCounter(METER_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, DASH_METER_COUNTER_ID_LIST));
+    }
+
+    TEST_F(StandaloneFCTest, TestCPDataChannelStatusUpdate)
+    {
+        EniEntry tmp_entry;
+        tmp_entry.eni_id = 0x7008000000022;
+        m_DashOrch->eni_entries_["497f23d7-f0ac-4c99-a98f-59b470e8c7d"] = tmp_entry;
+
+        m_DashOrch->handleCPDataChannelFCStatusUpdate(true);
+        ASSERT_TRUE(checkFlexCounter(CP_DATA_CHANNEL_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, CP_DATA_CHANNEL_COUNTER_ID_LIST));
+
+        m_DashOrch->handleCPDataChannelFCStatusUpdate(false);
+        ASSERT_FALSE(checkFlexCounter(CP_DATA_CHANNEL_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, CP_DATA_CHANNEL_COUNTER_ID_LIST));
+    }
+
+    TEST_F(StandaloneFCTest, TestBulkSyncStatusUpdate)
+    {
+        EniEntry tmp_entry;
+        tmp_entry.eni_id = 0x7008000000023;
+        m_DashOrch->eni_entries_["497f23d7-f0ac-4c99-a98f-59b470e8c7e"] = tmp_entry;
+
+        m_DashOrch->handleBulkSyncFCStatusUpdate(true);
+        ASSERT_TRUE(checkFlexCounter(BULK_SYNC_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, BULK_SYNC_COUNTER_ID_LIST));
+
+        m_DashOrch->handleBulkSyncFCStatusUpdate(false);
+        ASSERT_FALSE(checkFlexCounter(BULK_SYNC_STAT_COUNTER_FLEX_COUNTER_GROUP, tmp_entry.eni_id, BULK_SYNC_COUNTER_ID_LIST));
+    }
+
     TEST_F(StandaloneFCTest, TestCaching)
     {
         mockFlexCounterOperationCallCount = 0;
