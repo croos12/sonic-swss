@@ -60,7 +60,9 @@ static const std::unordered_map<string, sai_direction_lookup_entry_action_t> dir
 DashOrch::DashOrch(DBConnector *db, vector<string> &tableName, DBConnector *app_state_db, ZmqServer *zmqServer) :
     ZmqOrch(db, tableName, zmqServer),
     EniCounter(ENI_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, ENI_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
-    MeterCounter(METER_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, METER_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false)
+    MeterCounter(METER_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, METER_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
+    CPDataChannelCounter(CP_DATA_CHANNEL_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, CP_DATA_CHANNEL_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false),
+    BulkSyncCounter(BULK_SYNC_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, BULK_SYNC_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false)
 {
     SWSS_LOG_ENTER();
 
@@ -1316,6 +1318,30 @@ void DashOrch::DashCounter<CounterType::DASH_METER>::fetchStats()
     {
         auto counter_id = static_cast<sai_meter_bucket_entry_stat_t>(stat_enum);
         counter_stats.insert(sai_serialize_meter_bucket_entry_stat(counter_id));
+    }
+}
+
+template<>
+void DashOrch::DashCounter<CounterType::CP_DATA_CHANNEL>::fetchStats()
+{
+    counter_stats.clear();
+    auto stat_enum_list = queryAvailableCounterStats((sai_object_type_t)SAI_OBJECT_TYPE_HA_SET);
+    for (auto &stat_enum: stat_enum_list)
+    {
+        auto counter_id = static_cast<sai_ha_set_stat_t>(stat_enum);
+        counter_stats.insert(sai_serialize_ha_set_stat(counter_id));
+    }
+}
+
+template<>
+void DashOrch::DashCounter<CounterType::BULK_SYNC>::fetchStats()
+{
+    counter_stats.clear();
+    auto stat_enum_list = queryAvailableCounterStats((sai_object_type_t)SAI_OBJECT_TYPE_HA_SET);
+    for (auto &stat_enum: stat_enum_list)
+    {
+        auto counter_id = static_cast<sai_ha_set_stat_t>(stat_enum);
+        counter_stats.insert(sai_serialize_ha_set_stat(counter_id));
     }
 }
 
