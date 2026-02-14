@@ -62,7 +62,8 @@ static const map<sai_ha_scope_event_t, string> sai_ha_scope_event_type_name =
 DashHaOrch::DashHaOrch(DBConnector *db, const vector<string> &tables, DashOrch *dash_orch, BfdOrch *bfd_orch, DBConnector *app_state_db, ZmqServer *zmqServer) :
     ZmqOrch(db, tables, zmqServer),
     m_dash_orch(dash_orch),
-    m_bfd_orch(bfd_orch)
+    m_bfd_orch(bfd_orch),
+    HaSetCounter(HA_SET_STAT_COUNTER_FLEX_COUNTER_GROUP, StatsMode::READ, HA_SET_STAT_FLEX_COUNTER_POLLING_INTERVAL_MS, false)
 {
     SWSS_LOG_ENTER();
 
@@ -315,6 +316,7 @@ bool DashHaOrch::addHaSetEntry(const std::string &key, const dash::ha_set::HaSet
         }
     }
     m_ha_set_entries[key] = HaSetEntry {sai_ha_set_oid, entry};
+    HaSetCounter.addToFC(sai_ha_set_oid, key);
     SWSS_LOG_NOTICE("Created HA Set object for %s", key.c_str());
 
     return true;
@@ -331,7 +333,7 @@ bool DashHaOrch::removeHaSetEntry(const std::string &key)
         SWSS_LOG_WARN("HA Set entry does not exist for %s", key.c_str());
         return true;
     }
-
+    HaSetCounter.removeFromFC(it->second.ha_set_id, key);
     sai_status_t status = sai_dash_ha_api->remove_ha_set(it->second.ha_set_id);
 
     if (status != SAI_STATUS_SUCCESS)
