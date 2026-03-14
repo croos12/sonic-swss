@@ -41,6 +41,7 @@ override_dh_auto_configure:
 
 override_dh_auto_build:
 	dh_auto_build
+	# Build and test countersyncd Rust project
 	cargo build --release --locked
 
 ifneq ($(filter asan,$(DEB_BUILD_PROFILES)),)
