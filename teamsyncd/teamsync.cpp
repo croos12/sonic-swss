@@ -284,6 +284,7 @@ TeamSync::TeamPortSync::TeamPortSync(const string &lagName, int ifindex,
             struct teamdctl *m_teamdctl = teamdctl_alloc();
             if (!m_teamdctl)
             {
+                team_change_handler_unregister(m_team, &gPortChangeHandler, this);
                 team_free(m_team);
                 m_team = NULL;
                 throw system_error(make_error_code(errc::address_not_available),
@@ -293,6 +294,7 @@ TeamSync::TeamPortSync::TeamPortSync(const string &lagName, int ifindex,
             err = teamdctl_connect(m_teamdctl, lagName.c_str(), nullptr, "usock");
             if (err)
             {
+                team_change_handler_unregister(m_team, &gPortChangeHandler, this);
                 team_free(m_team);
                 m_team = NULL;
                 teamdctl_free(m_teamdctl);
@@ -304,6 +306,7 @@ TeamSync::TeamPortSync::TeamPortSync(const string &lagName, int ifindex,
             err = teamdctl_config_get_raw_direct(m_teamdctl, &response);
             if (err)
             {
+                team_change_handler_unregister(m_team, &gPortChangeHandler, this);
                 team_free(m_team);
                 m_team = NULL;
                 teamdctl_disconnect(m_teamdctl);
